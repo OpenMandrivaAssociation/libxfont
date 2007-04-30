@@ -104,6 +104,6 @@ rm -rf %{buildroot}
 %files -n %{libxfont}
 %defattr(-,root,root)
 %{_libdir}/libXfont.so.1
-%{_libdir}/libXfont.so.1.4.1
+%{_libdir}/libXfont.so.1.*
 
 
