@@ -1,14 +1,13 @@
 %define libxfont %mklibname xfont 1
 Name: libxfont
 Summary:  X font Library
-Version: 1.2.8
-Release: %mkrel 3
+Version: 1.2.9
+Release: %mkrel 1
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
 Source0: http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
 Patch1: libxfont-1.1.0-freetype_module_pic.patch
-Patch2: libxfont-1.2.8-symlink-fontpaths.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
@@ -83,11 +82,8 @@ Static development files for %{name}
 %ifnarch %{ix86}
 %patch1 -p1 -b .pic
 %endif
-%patch2 -p1 -b .symlink-font-paths
 
 %build
-# needed for libxfont-1.1.0-freetype_module_pic.patch
-autoreconf -ifs
 %configure	--x-includes=%{_includedir}\
 		--x-libraries=%{_libdir}
 
