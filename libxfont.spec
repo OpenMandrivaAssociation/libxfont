@@ -2,12 +2,14 @@
 Name: libxfont
 Summary:  X font Library
 Version: 1.3.0
-Release: %mkrel 1
+Release: %mkrel 2
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
 Source0: http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
 Patch1: libxfont-1.1.0-freetype_module_pic.patch
+Patch2: 0001-support-relative-paths-in-catalogue-dir-symlinks.patch
+Patch3: 0002-fix-dirfd-leak-on-CatalogueRescan.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
@@ -82,6 +84,8 @@ Static development files for %{name}
 %ifnarch %{ix86}
 %patch1 -p1 -b .pic
 %endif
+%patch2 -p1 -b .relative-symlinks
+%patch3 -p1 -b .dirfd-leak
 
 %build
 %configure	--x-includes=%{_includedir}\
