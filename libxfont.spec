@@ -1,13 +1,17 @@
 %define libxfont %mklibname xfont 1
 Name: libxfont
 Summary:  X font Library
-Version: 1.3.0
-Release: %mkrel 3
+Version: 1.3.1
+Release: %mkrel 1
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
 Source0: http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
 Patch1: libxfont-1.1.0-freetype_module_pic.patch
+# from git
+Patch2: 0001-catalogue.c-prevent-a-one-character-overflow.patch
+# submitted upstream as bug #11573
+Patch3: 0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
@@ -82,6 +86,8 @@ Static development files for %{name}
 %ifnarch %{ix86}
 %patch1 -p1 -b .pic
 %endif
+%patch2 -p1 -b .one-char-overflow
+%patch3 -p1 -b .check-dirs-mtime
 
 %build
 %configure
