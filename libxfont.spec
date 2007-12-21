@@ -13,6 +13,7 @@ Patch2: 0001-catalogue.c-prevent-a-one-character-overflow.patch
 # submitted upstream as bug #11573
 Patch3: 0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 Patch4: libxfont-visibility.patch
+BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
 BuildRequires: freetype2-devel >= 2.1.10
