@@ -15,11 +15,12 @@ Patch3: 0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 Patch4: libxfont-visibility.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
-BuildRequires: libfontenc-devel >= 1.0.1
-BuildRequires: freetype2-devel >= 2.1.10
-BuildRequires: x11-proto-devel >= 1.0.0
-BuildRequires: x11-util-macros >= 1.0.1
-BuildRequires: x11-xtrans-devel >= 1.0.0
+BuildRequires: x11-util-macros		>= 1.1.5
+BuildRequires: x11-xtrans-devel		>= 1.0.4
+BuildRequires: zlib-devel
+BuildRequires: x11-proto-devel		>= 7.3
+BuildRequires: libfontenc-devel		>= 1.0.4
+BuildRequires: freetype2-devel		>= 2.3.5
 
 %description
 X font Library
@@ -89,7 +90,6 @@ Static development files for %{name}
 %endif
 %patch2 -p1 -b .one-char-overflow
 %patch3 -p1 -b .check-dirs-mtime
-%patch4 -p1 -b .visibility
 
 %build
 %configure
@@ -109,4 +109,3 @@ rm -rf %{buildroot}
 %defattr(-,root,root)
 %{_libdir}/libXfont.so.1
 %{_libdir}/libXfont.so.1.*
-
