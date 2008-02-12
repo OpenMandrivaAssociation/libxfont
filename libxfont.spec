@@ -2,7 +2,7 @@
 Name: libxfont
 Summary:  X font Library
 Version: 1.3.1
-Release: %mkrel 2
+Release: %mkrel 3
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
@@ -12,15 +12,15 @@ Patch1: libxfont-1.1.0-freetype_module_pic.patch
 Patch2: 0001-catalogue.c-prevent-a-one-character-overflow.patch
 # submitted upstream as bug #11573
 Patch3: 0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
-Patch4: libxfont-visibility.patch
+# Closes http://qa.mandriva.com/show_bug.cgi?id=37101
+Patch4: cve-2008-0006.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
-BuildRequires: x11-util-macros		>= 1.1.5
-BuildRequires: x11-xtrans-devel		>= 1.0.4
-BuildRequires: zlib-devel
-BuildRequires: x11-proto-devel		>= 7.3
-BuildRequires: libfontenc-devel		>= 1.0.4
-BuildRequires: freetype2-devel		>= 2.3.5
+BuildRequires: libfontenc-devel >= 1.0.1
+BuildRequires: freetype2-devel >= 2.1.10
+BuildRequires: x11-proto-devel >= 1.0.0
+BuildRequires: x11-util-macros >= 1.0.1
+BuildRequires: x11-xtrans-devel >= 1.0.0
 
 %description
 X font Library
@@ -90,6 +90,7 @@ Static development files for %{name}
 %endif
 %patch2 -p1 -b .one-char-overflow
 %patch3 -p1 -b .check-dirs-mtime
+%patch4 -p1 -b .cve-2008-0006
 
 %build
 %configure
