@@ -10,8 +10,6 @@ Source0: http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}
 Patch1: libxfont-1.1.0-freetype_module_pic.patch
 # submitted upstream as bug #11573
 Patch3: 0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
-# Closes http://qa.mandriva.com/show_bug.cgi?id=37101
-Patch4: cve-2008-0006.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
@@ -87,7 +85,6 @@ Static development files for %{name}
 %patch1 -p1 -b .pic
 %endif
 %patch3 -p1 -b .check-dirs-mtime
-%patch4 -p1 -b .cve-2008-0006
 
 %build
 %configure
