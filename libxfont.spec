@@ -1,15 +1,14 @@
 %define libxfont %mklibname xfont 1
 Name: libxfont
 Summary:  X font Library
-Version: 1.3.3
+Version: 1.3.4
 Release: %mkrel 1
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
 Source0: http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
-Patch1: libxfont-1.1.0-freetype_module_pic.patch
 # submitted upstream as bug #11573
-Patch3: 0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
+Patch3: libXfont-1.3.4-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
@@ -17,6 +16,7 @@ BuildRequires: freetype2-devel >= 2.1.10
 BuildRequires: x11-proto-devel >= 1.0.0
 BuildRequires: x11-util-macros >= 1.0.1
 BuildRequires: x11-xtrans-devel >= 1.0.0
+BuildRequires: bzip2-devel
 
 %description
 X font Library
@@ -28,6 +28,7 @@ Summary:  X font Library
 Group: Development/X11
 Conflicts: libxorg-x11 < 7.0
 Provides: %{name} = %{version}
+Requires: x11-font-encodings
 
 %description -n %{libxfont}
 X font Library
@@ -81,13 +82,12 @@ Static development files for %{name}
 
 %prep
 %setup -q -n libXfont-%{version}
-%ifnarch %{ix86}
-%patch1 -p1 -b .pic
-%endif
 %patch3 -p1 -b .check-dirs-mtime
 
 %build
-%configure
+%configure2_5x \
+	--with-encodingsdir=%{_datadir}/fonts/encodings
+	--with-bzip2
 %make
 
 %install
