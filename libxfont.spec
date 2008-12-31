@@ -86,7 +86,7 @@ Static development files for %{name}
 
 %build
 %configure2_5x \
-	--with-encodingsdir=%{_datadir}/fonts/encodings
+	--with-encodingsdir=%{_datadir}/fonts/encodings \
 	--with-bzip2
 %make
 
