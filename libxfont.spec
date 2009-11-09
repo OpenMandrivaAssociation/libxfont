@@ -1,8 +1,8 @@
 %define libxfont %mklibname xfont 1
 Name: libxfont
 Summary:  X font Library
-Version: 1.4.0
-Release: %mkrel 2
+Version: 1.4.1
+Release: %mkrel 1
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
