@@ -1,15 +1,18 @@
-%define libxfont %mklibname xfont 1
+%define major 1
+%define libname %mklibname xfont %{major}
+%define develname %mklibname -d
+%define staticname %mklibname -s -d
+
 Name: libxfont
 Summary:  X font Library
 Version: 1.4.4
-Release: %mkrel 1
+Release: 2
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
 Source0: http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
 # submitted upstream as bug #11573
 Patch3: libXfont-1.3.4-rescan-catalogue-dir-fontpaths-on-directory-change.patch
-BuildRoot: %{_tmppath}/%{name}-root
 
 BuildRequires: libfontenc-devel >= 1.0.1
 BuildRequires: freetype2-devel >= 2.1.10
@@ -23,38 +26,34 @@ X font Library
 
 #-----------------------------------------------------------
 
-%package -n %{libxfont}
+%package -n %{libname}
 Summary:  X font Library
 Group: Development/X11
 Conflicts: libxorg-x11 < 7.0
 Provides: %{name} = %{version}
-Requires: x11-font-encodings
 
-%description -n %{libxfont}
+%description -n %{libname}
 X font Library
 
 #-----------------------------------------------------------
 
-%package -n %{libxfont}-devel
+%package -n %{develname}
 Summary: Development files for %{name}
 Group: Development/X11
-
-Requires: %{libxfont} = %{version}
-Requires: x11-proto-devel >= 1.0.0
+Requires: %{libname} = %{version}
 Provides: libxfont-devel = %{version}-%{release}
-
+Obsoletes: %{_lib}xfont1-devel
 Conflicts: libxorg-x11-devel < 7.0
 
-%description -n %{libxfont}-devel
+%description -n %{develname}
 Development files for %{name}
 
-%pre -n %{libxfont}-devel
+%pre -n %{develname}
 if [ -h %{_includedir}/X11 ]; then
 	rm -f %{_includedir}/X11
 fi
 
-%files -n %{libxfont}-devel
-%defattr(-,root,root)
+%files -n %{develname}
 %{_libdir}/libXfont.so
 %{_libdir}/libXfont.la
 %{_libdir}/pkgconfig/xfont.pc
@@ -63,19 +62,18 @@ fi
 
 #-----------------------------------------------------------
 
-%package -n %{libxfont}-static-devel
+%package -n %{staticname}
 Summary: Static development files for %{name}
 Group: Development/X11
-Requires: %{libxfont}-devel = %{version}
+Requires: %{develname} = %{version}-%{release}
 Provides: libxfont-static-devel = %{version}-%{release}
-
+Obsoletes: %{_lib}xfont1-static-devel
 Conflicts: libxorg-x11-static-devel < 7.0
 
-%description -n %{libxfont}-static-devel
+%description -n %{staticname}
 Static development files for %{name}
 
-%files -n %{libxfont}-static-devel
-%defattr(-,root,root)
+%files -n %{staticname}
 %{_libdir}/libXfont.a
 
 #-----------------------------------------------------------
@@ -94,17 +92,6 @@ Static development files for %{name}
 rm -rf %{buildroot}
 %makeinstall_std
 
-%clean
-rm -rf %{buildroot}
+%files -n %{libname}
+%{_libdir}/libXfont.so.%{major}*
 
-%if %mdkversion < 200900
-%post -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -p /sbin/ldconfig
-%endif
-
-%files -n %{libxfont}
-%defattr(-,root,root)
-%{_libdir}/libXfont.so.1
-%{_libdir}/libXfont.so.1.*
