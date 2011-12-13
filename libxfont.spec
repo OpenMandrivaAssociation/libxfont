@@ -1,7 +1,7 @@
 %define major 1
 %define libname %mklibname xfont %{major}
-%define develname %mklibname -d
-%define staticname %mklibname -s -d
+%define develname %mklibname xfont -d
+%define staticname %mklibname xfont -s -d
 
 Name: libxfont
 Summary:  X font Library
@@ -91,6 +91,7 @@ Static development files for %{name}
 %install
 rm -rf %{buildroot}
 %makeinstall_std
+find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 
 %files -n %{libname}
 %{_libdir}/libXfont.so.%{major}*
