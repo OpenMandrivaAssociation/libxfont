@@ -55,7 +55,7 @@ fi
 
 %files -n %{develname}
 %{_libdir}/libXfont.so
-%{_libdir}/libXfont.la
+#{_libdir}/libXfont.la
 %{_libdir}/pkgconfig/xfont.pc
 %dir %{_includedir}/X11/fonts
 %{_includedir}/X11/fonts/*
