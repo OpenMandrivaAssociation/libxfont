@@ -5,7 +5,7 @@
 Name: libxfont
 Summary:  X font Library
 Version: 1.4.5
-Release: 1
+Release: 2
 Group: Development/X11
 License: MIT
 URL: http://xorg.freedesktop.org
@@ -60,11 +60,6 @@ Development files for %{name}
 rm -rf %{buildroot}
 %makeinstall_std
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
-
-%pre -n %{develname}
-if [ -h %{_includedir}/X11 ]; then
-	rm -f %{_includedir}/X11
-fi
 
 %files -n %{libname}
 %{_libdir}/libXfont.so.%{major}*
