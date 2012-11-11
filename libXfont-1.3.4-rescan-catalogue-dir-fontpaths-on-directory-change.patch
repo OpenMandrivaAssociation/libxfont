@@ -1,0 +1,280 @@
+From: Ademar de Souza Reis Jr <ademar@mandriva.com.br>
+Date: Tue, 9 Oct 2007 14:51:30 -0300
+Subject: [PATCH] rescan catalogue:<dir> fontpaths on directory change
+
+The current catalogue:<dir> implementation on libXfont rescan the
+font paths only if <dir> (fontpath.d) has its mtime changed.
+
+The problem is that most of the time, what changes is not the
+fontpath.d dir, but the dirs pointed by the symlinks (e.g. some
+fonts are installed inside the same directory, package managers
+write the symlink before the directory is changed, user can run
+mkfontdir, etc).
+
+I'm not familiar enough with libXfont to implement an optimal
+solution, so I cooked a simple and non-intrusive patch that does
+the work by forcing a rescan in case any of the dirs have its
+mtime changed (below, applies on top of my previous libXfont
+patches).
+
+My solution is not optimal since it runs through the fontpath.d
+dir twice (once to check mtime and once to build the FPEs), but
+it works and accoding to my tests the performance cost is far
+from being noticeable.
+
+So, what do you think? Any chances of merging such a patch?
+diff -Naur libXfont-1.3.4/0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch libXfont-1.3.4.tpg/0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch
+--- libXfont-1.3.4/0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch	1970-01-01 00:00:00.000000000 +0000
++++ libXfont-1.3.4.tpg/0002-rescan-catalogue-dir-fontpaths-on-directory-change.patch	2008-12-22 00:40:35.000000000 +0000
+@@ -0,0 +1,142 @@
++From 14466768a348020ae896595e0e08d6cd21b41b4a Mon Sep 17 00:00:00 2001
++From: Ademar de Souza Reis Jr <ademar@mandriva.com.br>
++Date: Tue, 9 Oct 2007 14:51:30 -0300
++Subject: [PATCH] rescan catalogue:<dir> fontpaths on directory change
++
++The current catalogue:<dir> implementation on libXfont rescan the
++font paths only if <dir> (fontpath.d) has its mtime changed.
++
++The problem is that most of the time, what changes is not the
++fontpath.d dir, but the dirs pointed by the symlinks (e.g. some
++fonts are installed inside the same directory, package managers
++write the symlink before the directory is changed, user can run
++mkfontdir, etc).
++
++I'm not familiar enough with libXfont to implement an optimal
++solution, so I cooked a simple and non-intrusive patch that does
++the work by forcing a rescan in case any of the dirs have its
++mtime changed (below, applies on top of my previous libXfont
++patches).
++
++My solution is not optimal since it runs through the fontpath.d
++dir twice (once to check mtime and once to build the FPEs), but
++it works and accoding to my tests the performance cost is far
++from being noticeable.
++
++So, what do you think? Any chances of merging such a patch?
++---
++ src/fontfile/catalogue.c |   68 +++++++++++++++++++++++++++++++++++-----------
++ 1 files changed, 52 insertions(+), 16 deletions(-)
++
++diff --git a/src/fontfile/catalogue.c b/src/fontfile/catalogue.c
++index c0d90f8..3948f2c 100644
++--- a/src/fontfile/catalogue.c
+++++ b/src/fontfile/catalogue.c
++@@ -123,6 +123,20 @@ CatalogueUnrefFPEs (FontPathElementPtr fpe)
++     cat->fpeCount = 0;
++ }
++ 
+++NormalizeRelativePath(char *path, const char *root, int pathsize)
+++{
+++    int rootlen;
+++    if (path[0] != '/')
+++    {
+++        rootlen = strlen(root);
+++        memmove(path + rootlen + 1, path, pathsize - rootlen - 1);
+++        memcpy(path, root, rootlen);
+++        memcpy(path + rootlen, "/", 1);
+++        return rootlen + 1;
+++    }
+++    return 0;
+++}
+++
++ static int
++ CatalogueRescan (FontPathElementPtr fpe)
++ {
++@@ -136,14 +150,9 @@ CatalogueRescan (FontPathElementPtr fpe)
++     DIR			*dir;
++     struct dirent	*entry;
++     int			len;
++-    int			pathlen;
+++    time_t     mtime = cat->mtime;
++ 
++     path = fpe->name + strlen(CataloguePrefix);
++-    if (stat(path, &statbuf) < 0 || !S_ISDIR(statbuf.st_mode))
++-	return BadFontPath;
++-
++-    if (statbuf.st_mtime <= cat->mtime)
++-	return Successful;
++ 
++     dir = opendir(path);
++     if (dir == NULL)
++@@ -152,6 +161,42 @@ CatalogueRescan (FontPathElementPtr fpe)
++ 	return BadFontPath;
++     }
++ 
+++    while (entry = readdir(dir), entry != NULL)
+++    {
+++	snprintf(link, sizeof link, "%s/%s", path, entry->d_name);
+++	len = readlink(link, dest, sizeof dest);
+++	if (len < 0)
+++	    continue;
+++
+++	dest[len] = '\0';
+++
+++	len += NormalizeRelativePath(dest, path, sizeof dest);
+++
+++	if (stat(dest, &statbuf) < 0 || !S_ISDIR(statbuf.st_mode))
+++	    continue;
+++
+++	if (statbuf.st_mtime < cat->mtime)
+++	    continue;
+++
+++	if (statbuf.st_mtime > mtime)
+++	    mtime = statbuf.st_mtime;
+++    }
+++
+++    if (stat(path, &statbuf) < 0 || !S_ISDIR(statbuf.st_mode))
+++    {
+++	closedir(dir);
+++	return BadFontPath;
+++    }
+++
+++    if (cat->mtime >= mtime && cat->mtime >= statbuf.st_mtime)
+++    {
+++	closedir(dir);
+++	return Successful;
+++    }
+++    else
+++	cat->mtime = mtime > statbuf.st_mtime ? mtime : statbuf.st_mtime;
+++
+++    rewinddir(dir);
++     CatalogueUnrefFPEs (fpe);
++     while (entry = readdir(dir), entry != NULL)
++     {
++@@ -162,14 +207,7 @@ CatalogueRescan (FontPathElementPtr fpe)
++ 
++ 	dest[len] = '\0';
++ 
++-	if (dest[0] != '/')
++-	{
++-	   pathlen = strlen(path);
++-	   memmove(dest + pathlen + 1, dest, sizeof dest - pathlen - 1);
++-	   memcpy(dest, path, pathlen);
++-	   memcpy(dest + pathlen, "/", 1);
++-	   len += pathlen + 1;
++-	}
+++	len += NormalizeRelativePath(dest, path, sizeof dest);
++ 
++ 	attrib = strchr(link, ':');
++ 	if (attrib && len + strlen(attrib) < sizeof dest)
++@@ -223,8 +261,6 @@ CatalogueRescan (FontPathElementPtr fpe)
++     qsort(cat->fpeList,
++ 	  cat->fpeCount, sizeof cat->fpeList[0], ComparePriority);
++ 
++-    cat->mtime = statbuf.st_mtime;
++-
++     return Successful;
++ }
++ 
++-- 
++1.5.3.2
++
+diff -Naur libXfont-1.3.4/src/fontfile/catalogue.c libXfont-1.3.4.tpg/src/fontfile/catalogue.c
+--- libXfont-1.3.4/src/fontfile/catalogue.c	2008-12-19 21:13:29.000000000 +0000
++++ libXfont-1.3.4.tpg/src/fontfile/catalogue.c	2008-12-31 00:02:58.000000000 +0000
+@@ -123,6 +123,20 @@
+     cat->fpeCount = 0;
+ }
+ 
++NormalizeRelativePath(char *path, const char *root, int pathsize)
++{
++    int rootlen;
++    if (path[0] != '/')
++    {
++        rootlen = strlen(root);
++        memmove(path + rootlen + 1, path, pathsize - rootlen - 1);
++        memcpy(path, root, rootlen);
++        memcpy(path + rootlen, "/", 1);
++        return rootlen + 1;
++    }
++    return 0;
++}
++
+ /* Rescan catalogue directory if modified timestamp has changed or
+  * the forceScan argument says to do it anyway (like on first load). */
+ static int
+@@ -138,14 +152,9 @@
+     DIR			*dir;
+     struct dirent	*entry;
+     int			len;
+-    int			pathlen;
++    time_t     mtime = cat->mtime;
+ 
+     path = fpe->name + strlen(CataloguePrefix);
+-    if (stat(path, &statbuf) < 0 || !S_ISDIR(statbuf.st_mode))
+-	return BadFontPath;
+-
+-    if ((forceScan == FALSE) && (statbuf.st_mtime <= cat->mtime))
+-	return Successful;
+ 
+     dir = opendir(path);
+     if (dir == NULL)
+@@ -154,6 +163,43 @@
+ 	return BadFontPath;
+     }
+ 
++    while (entry = readdir(dir), entry != NULL)
++    {
++       snprintf(link, sizeof link, "%s/%s", path, entry->d_name);
++       len = readlink(link, dest, sizeof dest);
++       if (len < 0)
++           continue;
++
++       dest[len] = '\0';
++
++       len += NormalizeRelativePath(dest, path, sizeof dest);
++
++       if (stat(dest, &statbuf) < 0 || !S_ISDIR(statbuf.st_mode))
++           continue;
++
++       if (statbuf.st_mtime < cat->mtime)
++           continue;
++
++       if (statbuf.st_mtime > mtime)
++           mtime = statbuf.st_mtime;
++    }
++
++    if (stat(path, &statbuf) < 0 || !S_ISDIR(statbuf.st_mode))
++    {
++       closedir(dir);
++       return BadFontPath;
++    }
++
++    if (cat->mtime >= mtime && cat->mtime >= statbuf.st_mtime)
++    {
++       closedir(dir);
++       return Successful;
++    }
++    else
++       cat->mtime = mtime > statbuf.st_mtime ? mtime : statbuf.st_mtime;
++
++    rewinddir(dir);
++
+     CatalogueUnrefFPEs (fpe);
+     while (entry = readdir(dir), entry != NULL)
+     {
+@@ -164,14 +210,7 @@
+ 
+ 	dest[len] = '\0';
+ 
+-	if (dest[0] != '/')
+-	{
+-	   pathlen = strlen(path);
+-	   memmove(dest + pathlen + 1, dest, sizeof dest - pathlen - 1);
+-	   memcpy(dest, path, pathlen);
+-	   memcpy(dest + pathlen, "/", 1);
+-	   len += pathlen + 1;
+-	}
++        len += NormalizeRelativePath(dest, path, sizeof dest);
+ 
+ 	attrib = strchr(link, ':');
+ 	if (attrib && len + strlen(attrib) < sizeof dest)
+@@ -225,8 +264,6 @@
+     qsort(cat->fpeList,
+ 	  cat->fpeCount, sizeof cat->fpeList[0], ComparePriority);
+ 
+-    cat->mtime = statbuf.st_mtime;
+-
+     return Successful;
+ }
+ 
