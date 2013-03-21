@@ -10,6 +10,7 @@ Group:		Development/X11
 License:	MIT
 URL:		http://xorg.freedesktop.org
 Source0:	http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
+Patch0:		libxfont-aarch64.patch
 # submitted upstream as bug #11573
 Patch3:		libXfont-1.3.4-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 
@@ -46,6 +47,7 @@ Development files for %{name}
 
 %prep
 %setup -qn libXfont-%{version}
+%patch0 -p1
 %patch3 -p1 -b .check-dirs-mtime
 
 %build
