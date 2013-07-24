@@ -4,8 +4,8 @@
 
 Summary:	X font Library
 Name:		libxfont
-Version:	1.4.5
-Release:	4
+Version:	1.4.6
+Release:	1
 Group:		Development/X11
 License:	MIT
 Url:		http://xorg.freedesktop.org
@@ -30,7 +30,7 @@ Group:		Development/X11
 Provides:	%{name} = %{version}-%{release}
 
 %description -n %{libname}
-X font Library
+X font Library.
 
 %package -n %{devname}
 Summary:	Development files for %{name}
@@ -39,7 +39,7 @@ Requires:	%{libname} = %{version}-%{release}
 Provides:	libxfont-devel = %{version}-%{release}
 
 %description -n %{devname}
-Development files for %{name}
+Development files for %{name}.
 
 %prep
 %setup -qn libXfont-%{version}
