@@ -1,0 +1,11 @@
+--- libXfont-1.4.8/src/fontfile/catalogue.c.omv~	2014-06-23 08:55:58.130177134 +0200
++++ libXfont-1.4.8/src/fontfile/catalogue.c	2014-06-23 08:56:12.433613542 +0200
+@@ -124,7 +124,7 @@ CatalogueUnrefFPEs (FontPathElementPtr f
+     cat->fpeCount = 0;
+ }
+ 
+-NormalizeRelativePath(char *path, const char *root, int pathsize)
++int NormalizeRelativePath(char *path, const char *root, int pathsize)
+ {
+     int rootlen;
+     if (path[0] != '/')

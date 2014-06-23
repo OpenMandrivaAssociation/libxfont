@@ -5,13 +5,15 @@
 Summary:	X font Library
 Name:		libxfont
 Version:	1.4.8
-Release:	2
+Release:	1
 Group:		Development/X11
 License:	MIT
 Url:		http://xorg.freedesktop.org
 Source0:	http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
+Patch0:		libXfont-1.4.8-fontsproto-2.1.3-constchar.patch
 # submitted upstream as bug #11573
 Patch3:		libXfont-1.3.4-rescan-catalogue-dir-fontpaths-on-directory-change.patch
+Patch4:		libXfont-1.4.8-clang.patch
 
 BuildRequires:	bzip2-devel
 BuildRequires:	pkgconfig(fontenc)
@@ -43,9 +45,10 @@ Development files for %{name}.
 %prep
 %setup -qn libXfont-%{version}
 %apply_patches
+autoreconf -fi
 
 %build
-%configure2_5x \
+%configure \
 	--disable-static \
 	--with-bzip2 \
 	--without-fop
