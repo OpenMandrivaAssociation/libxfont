@@ -4,8 +4,8 @@
 
 Summary:	X font Library
 Name:		libxfont
-Version:	1.4.8
-Release:	2
+Version:	1.5.0
+Release:	1
 Group:		Development/X11
 License:	MIT
 Url:		http://xorg.freedesktop.org
