@@ -10,7 +10,6 @@ Group:		Development/X11
 License:	MIT
 Url:		http://xorg.freedesktop.org
 Source0:	http://xorg.freedesktop.org/releases/individual/lib/libXfont-%{version}.tar.bz2
-Patch0:		libXfont-1.4.8-fontsproto-2.1.3-constchar.patch
 # submitted upstream as bug #11573
 Patch3:		libXfont-1.3.4-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 Patch4:		libXfont-1.4.8-clang.patch
