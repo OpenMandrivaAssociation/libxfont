@@ -4,7 +4,7 @@
 
 Summary:	X font Library
 Name:		libxfont
-Version:	1.5.2
+Version:	1.5.3
 Release:	1
 Group:		Development/X11
 License:	MIT
@@ -66,4 +66,3 @@ autoreconf -fi
 %{_libdir}/pkgconfig/xfont.pc
 %dir %{_includedir}/X11/fonts
 %{_includedir}/X11/fonts/*
-
