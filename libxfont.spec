@@ -44,7 +44,7 @@ Development files for %{name}.
 
 %prep
 %setup -qn libXfont-%{version}
-%apply_patches
+%autopatch -p1
 autoreconf -fi
 
 %build
