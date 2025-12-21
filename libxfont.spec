@@ -15,6 +15,11 @@ Source1:	libxfont.rpmlintrc
 Patch3:		libXfont-1.3.4-rescan-catalogue-dir-fontpaths-on-directory-change.patch
 Patch4:		libXfont-1.4.8-clang.patch
 
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	bzip2-devel
 BuildRequires:	pkgconfig(fontenc)
 BuildRequires:	pkgconfig(freetype2)
